@@ -9,7 +9,7 @@ import { getAuthToken } from "../utils/cookie.util";
 const getApiBaseUrl = (): string => {
     const envUrl = (import.meta as any).env?.VITE_API_URL;
     if (envUrl && typeof envUrl === "string" && envUrl.trim()) {
-        return envUrl.trim();
+        return envUrl.trim().replace(/\/+$/, "");
     }
 
     if (typeof window !== "undefined" && window.location && window.location.hostname) {
