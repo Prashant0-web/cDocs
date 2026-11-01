@@ -34,6 +34,7 @@ export const sendOTPEmail = async (toEmail: string, otp: string) => {
     // 1. If RESEND_API_KEY is available (Production HTTPS Port 443 - Never blocked on Render)
     if (resendApiKey) {
         try {
+            const fromEmail = process.env.RESEND_FROM?.trim() || "cDocs <onboarding@resend.dev>";
             const res = await fetch("https://api.resend.com/emails", {
                 method: "POST",
                 headers: {
@@ -41,7 +42,7 @@ export const sendOTPEmail = async (toEmail: string, otp: string) => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    from: "cDocs <onboarding@resend.dev>",
+                    from: fromEmail,
                     to: toEmail,
                     subject,
                     html: htmlContent,
