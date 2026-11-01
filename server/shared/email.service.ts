@@ -1,13 +1,21 @@
 import nodemailer from "nodemailer";
 
-// Create a transporter using SMTP
+const getCleanEnv = (val?: string) => (val || "").replace(/['"]/g, "").trim();
+
+// Create an enterprise-grade SMTP transporter for Gmail on port 465 (SSL)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // Port 465 uses SSL direct
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: getCleanEnv(process.env.SMTP_USER),
+        pass: getCleanEnv(process.env.SMTP_PASS),
     },
+    connectionTimeout: 8000, // 8 seconds timeout - never hang forever
+    greetingTimeout: 8000,
+    socketTimeout: 10000,
 });
+
 
 export const sendOTPEmail = async (toEmail: string, otp: string) => {
     try {

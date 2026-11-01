@@ -14,12 +14,21 @@ const signIn = async (req: Request, res: Response): Promise<any> => {
 
         // 6-digit OTP (100000 se 999999)
         const otp = crypto.randomInt(100000, 1000000);
+        console.log(`🔐 [Sign-In OTP for ${email}]: ${otp}`);
 
         // IMPORTANT: OTP ko database me update karo taaki verify kar sako
         user.otp = String(otp);
         await user.save();
 
-        await sendOTPEmail(email, String(otp));
+        try {
+            await sendOTPEmail(email, String(otp));
+        } catch (mailError: any) {
+            console.error(`⚠️ Failed to send Sign-In OTP email to ${email}:`, mailError?.message);
+            return res.status(502).json({
+                error: `Failed to deliver OTP to ${email}: ${mailError?.message || "Email service timeout"}. Please check server SMTP credentials or logs.`,
+            });
+        }
+
         return res.status(200).json({ code: 200, message: "OTP Sent Successfully" });
 
     } catch (error: any) {
@@ -53,8 +62,18 @@ const signUp = async (req: Request, res: Response): Promise<any> => {
 
         // 3. OTP Generate aur Save karo
         const otp = crypto.randomInt(100000, 1000000);
+        console.log(`🔐 [Sign-Up OTP for ${email}]: ${otp}`);
+
         await User.create({ email, username, otp: String(otp) });
-        await sendOTPEmail(email, String(otp));
+
+        try {
+            await sendOTPEmail(email, String(otp));
+        } catch (mailError: any) {
+            console.error(`⚠️ Failed to send Sign-Up OTP email to ${email}:`, mailError?.message);
+            return res.status(502).json({
+                error: `Failed to deliver OTP to ${email}: ${mailError?.message || "Email service timeout"}. Please check server SMTP credentials or logs.`,
+            });
+        }
 
         return res.status(200).json({ status: 200, message: "OTP Sent Successfully" });
 
