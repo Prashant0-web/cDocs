@@ -6,7 +6,7 @@ import { getAuthToken } from "../utils/cookie.util";
 // 1. If VITE_API_URL is provided in environment (e.g. Vercel, Netlify, production domain), use it!
 // 2. If testing over local LAN on phone (e.g. 192.168.1.11), use that host.
 // 3. Fallback to localhost:3000.
-const getApiBaseUrl = (): string => {
+export const getApiBaseUrl = (): string => {
     const envUrl = (import.meta as any).env?.VITE_API_URL;
     if (envUrl && typeof envUrl === "string" && envUrl.trim()) {
         return envUrl.trim().replace(/\/+$/, "");
@@ -25,7 +25,7 @@ const getApiBaseUrl = (): string => {
 const API_URL = getApiBaseUrl();
 
 // 1. Axios Instance create karo
-const apiClient = axios.create({
+export const apiClient = axios.create({
     baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',

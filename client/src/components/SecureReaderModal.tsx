@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { StoredUser } from "../utils/cookie.util";
-import axios from "axios";
-import { getAuthToken } from "../utils/cookie.util";
+import { apiClient } from "../services/api.service";
+
 
 // Initialize PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
@@ -44,16 +44,6 @@ export const SecureReaderModal: React.FC<SecureReaderModalProps> = ({
     // DRM / Screen capture blackout state
     const [isScreenProtected, setIsScreenProtected] = useState<boolean>(false);
 
-    // Automatically resolve API URL
-    const getApiBaseUrl = (): string => {
-        if (typeof window !== "undefined" && window.location && window.location.hostname) {
-            if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-                return `http://${window.location.hostname}:3000`;
-            }
-        }
-        return (import.meta as any).env?.VITE_API_URL || "http://localhost:3000";
-    };
-
     // 1. Fetch document binary directly into memory without exposing Cloudflare R2 links
     useEffect(() => {
         let isMounted = true;
@@ -62,16 +52,10 @@ export const SecureReaderModal: React.FC<SecureReaderModalProps> = ({
 
         const loadDocumentData = async () => {
             try {
-                const token = getAuthToken();
-                const viewUrl = `${getApiBaseUrl()}/documents/view/${docItem.id}`;
-
-                // Fetch raw arraybuffer from backend
-                const response = await axios.get(viewUrl, {
+                // Fetch raw arraybuffer directly from backend using unified apiClient
+                const response = await apiClient.get<ArrayBuffer>(`/documents/view/${docItem.id}`, {
                     responseType: "arraybuffer",
-                    headers: {
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                    },
-                    timeout: 30000,
+                    timeout: 45000,
                 });
 
                 if (!isMounted) return;
@@ -131,7 +115,7 @@ export const SecureReaderModal: React.FC<SecureReaderModalProps> = ({
                 if (isMounted) {
                     setErrorMessage(
                         err?.response?.data?.message ||
-                            "Failed to load protected document. Please try again."
+                        "Failed to load protected document. Please try again."
                     );
                 }
             } finally {
@@ -235,7 +219,7 @@ export const SecureReaderModal: React.FC<SecureReaderModalProps> = ({
                 // Purge clipboard so screenshot is blank
                 try {
                     navigator.clipboard?.writeText("");
-                } catch {}
+                } catch { }
                 setTimeout(() => setIsScreenProtected(false), 2000);
                 return;
             }
@@ -342,7 +326,7 @@ export const SecureReaderModal: React.FC<SecureReaderModalProps> = ({
                         onClick={onClose}
                         className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-900/60 hover:text-rose-200 text-slate-300 text-xs font-bold border border-slate-700 cursor-pointer transition-colors"
                     >
-                        ✕ Close Reader
+                        ✕
                     </button>
                 </div>
             </div>
