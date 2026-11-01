@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { AxiosRequestConfig } from "axios";
 import { getAuthToken } from "../utils/cookie.util";
- 
+
 // Automatically resolve API_URL:
 // 1. If VITE_API_URL is provided in environment (e.g. Vercel, Netlify, production domain), use it!
 // 2. If testing over local LAN on phone (e.g. 192.168.1.11), use that host.
@@ -30,7 +30,7 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 10000,
+    timeout: 60000,
 });
 
 // 2. Request Interceptor: Har request me automatically JWT token attach karne ke liye
