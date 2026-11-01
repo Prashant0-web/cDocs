@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy &amp; Terms of Use | cDocs</title>
+    <link rel="icon" type="image/png" href="/logo/logo-2.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-dark: #242d38;
+            --brand: #364252;
+            --accent: #f9dc42;
+            --bg-page: #f7f6f1;
+            --card-border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            line-height: 1.65;
+            color: #334155;
+            background-color: var(--bg-page);
+            padding: 1.5rem 1rem 3rem;
+        }
+
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 2.5rem 2rem;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--card-border);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-logo img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+        }
+
+        .brand-logo h1 {
+            font-size: 1.4rem;
+            color: var(--brand-dark);
+            margin: 0;
+            font-weight: 800;
+        }
+
+        .badge {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.65rem;
+            border-radius: 9999px;
+            white-space: nowrap;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--brand);
+            text-decoration: none;
+            padding: 0.4rem 0.85rem;
+            background: #f1f5f9;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: #e2e8f0;
+        }
+
+        section {
+            background: #fafbfc;
+            border: 1px solid #eef2f6;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        section.danger-card {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        section.warning-card {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+        }
+
+        section.privacy-card {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        h2 {
+            color: var(--brand-dark);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+        }
+
+        .num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            background: var(--brand);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+
+        .num-red {
+            background: #dc2626;
+        }
+
+        .num-amber {
+            background: #d97706;
+        }
+
+        .num-blue {
+            background: #2563eb;
+        }
+
+        p {
+            font-size: 0.925rem;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+
+        strong {
+            color: #0f172a;
+        }
+
+        .danger-card p {
+            color: #881337;
+        }
+
+        .danger-card strong {
+            color: #4c0519;
+            text-decoration: underline;
+            text-decoration-color: #fda4af;
+        }
+
+        footer {
+            margin-top: 2.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        footer p {
+            font-size: 0.825rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .container {
+                padding: 1.5rem 1rem;
+                border-radius: 16px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <header class="header">
+            <div class="brand-logo">
+                <img src="/logo/logo-2.png" alt="cDocs Logo">
+                <div>
+                    <h1>cDocs Policy &amp; Terms</h1>
+                    <span class="badge">Official 2026 Archive Guidelines</span>
+                </div>
+            </div>
+            <a href="/" class="back-btn">&larr; Back to cDocs</a>
+        </header>
+
+        <section>
+            <h2><span class="num">1</span> Acceptance of Terms</h2>
+            <p>By accessing and using cDocs, you accept and agree to be bound by the terms and provisions of this agreement. This platform is provided strictly as a peer-to-peer educational resource.</p>
+        </section>
+
+        <section>
+            <h2><span class="num">2</span> Nature of Content &amp; Sourcing</h2>
+            <p>All question papers, notes, and study materials available on cDocs are strictly crowdsourced and independently uploaded by students across various colleges and universities. cDocs operates solely as a community repository and does not maintain official affiliations with any university, educational board, or examination authority.</p>
+        </section>
+
+        <section class="danger-card">
+            <h2><span class="num num-red">3</span> Strict Prohibition of Future Exam Materials</h2>
+            <p>cDocs is a historical archive designed exclusively for past educational materials. <strong>Under no circumstances does cDocs host, distribute, or provide access to unreleased, leaked, or "future" exam question papers.</strong> Any user found attempting to upload or solicit upcoming exam papers will face immediate account termination and a permanent ban from the platform.</p>
+        </section>
+
+        <section class="warning-card">
+            <h2><span class="num num-amber">4</span> Accuracy and Reliance (Study at Your Own Risk)</h2>
+            <p>The materials provided on this platform are for reference purposes only. Because content is user-generated, cDocs does not guarantee the accuracy, completeness, or relevance of any document. Syllabi, exam formats, and grading criteria frequently change. You are solely responsible for verifying the relevance of any past paper against your current official university curriculum. cDocs is not liable for any academic performance outcomes, including failing grades resulting from reliance on outdated or incorrect materials found on this site.</p>
+        </section>
+
+        <section>
+            <h2><span class="num">5</span> User-Generated Content &amp; Copyright</h2>
+            <p>By uploading documents to cDocs, you confirm that you have the right to share the material. Users must not upload copyrighted textbooks, published research papers behind paywalls, or premium commercial study guides. If you are an educational institution or copyright holder and believe your proprietary material has been uploaded without authorization, you may submit a takedown request to our support team for immediate removal.</p>
+        </section>
+
+        <section>
+            <h2><span class="num">6</span> Limitation of Liability</h2>
+            <p>In no event shall cDocs, its developers, or its community moderators be liable for any direct, indirect, incidental, consequential, or punitive damages arising out of your access to, or use of, the platform. The service is provided on an "as is" and "as available" basis without any warranties of any kind.</p>
+        </section>
+
+        <section class="privacy-card">
+            <h2><span class="num num-blue">7</span> Privacy and Data Collection</h2>
+            <p>cDocs respects your privacy. We collect only the minimum data required to maintain the platform's functionality, such as basic authentication details (email, username) and session cookies to keep you logged in. We do not track your specific document downloads to sell to third-party advertisers or external educational organizations. Any uploaded documents will be publicly credited to your chosen username unless uploaded anonymously.</p>
+        </section>
+
+        <section>
+            <h2><span class="num">8</span> Modifications to the Service</h2>
+            <p>cDocs reserves the right to modify, suspend, or discontinue any part of the platform, including deleting specific documents or wiping inactive accounts, at any time without prior notice.</p>
+        </section>
+
+        <section>
+            <h2><span class="num">9</span> Future Monetization &amp; Platform Sustainability</h2>
+            <p>Currently, access to cDocs is provided completely free of charge. However, to cover ongoing server maintenance costs and to provide token rewards to the dedicated students who spend time collecting and uploading these resources, we reserve the right to introduce a nominal fee (ranging from ₹1 to ₹10 per document) in the future. Any such pricing changes will be transparently communicated to all users well in advance of implementation.</p>
+        </section>
+
+        <footer>
+            <p>If you have any questions regarding these policies or need to submit a content removal request, please contact the cDocs administrative team.</p>
+            <p>&copy; 2026 cDocs. All rights reserved.</p>
+        </footer>
+    </main>
+</body>
+
+</html>

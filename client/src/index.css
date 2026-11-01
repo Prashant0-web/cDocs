@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-light: #f7f6f1;
+  --color-brand: #364252;
+  --color-brand-dark: #242d38;
+  --color-accent: #f9dc42;
+  --color-accent-dark: #eab308;
+}
+
+/* Hide scrollbar for horizontal swipeable chips */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
