@@ -11,6 +11,8 @@ import {
     getSearchSuggestionsController,
     analyzeBatchPagesController,
     expandSearchQueryController,
+    createDocumentReviewController,
+    getDocumentReviewsController,
 } from "./document.controller.js";
 
 const router = Router();
@@ -87,6 +89,18 @@ router.get("/view/:id", secureViewDocumentController);
  * Fetches a single document metadata by ID
  */
 router.get("/:id", getDocumentByIdController);
+
+/**
+ * @route POST /documents/:id/reviews
+ * Creates a review/feedback on a document (saved in document_reviews collection)
+ */
+router.post("/:id/reviews", createDocumentReviewController);
+
+/**
+ * @route GET /documents/:id/reviews
+ * Fetches all reviews, average stars, and star breakdown for a document
+ */
+router.get("/:id/reviews", getDocumentReviewsController);
 
 /**
  * @route POST /documents/upload

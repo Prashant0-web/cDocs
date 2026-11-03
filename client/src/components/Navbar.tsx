@@ -6,12 +6,14 @@ interface NavbarProps {
     onSignOut: () => void;
     onRequestAuth?: (reason?: string) => void;
     onScrollToSection?: (id: string) => void;
+    onNavigateUpload?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
     user,
     onSignOut,
     onRequestAuth,
+    onNavigateUpload,
 }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -41,8 +43,24 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </span>
                 </div>
 
-                {/* Right Side: User Badge & Sign Out / Sign In Button */}
-                <div className="flex items-center gap-2.5 sm:gap-3">
+                {/* Right Side: Upload Button & User Badge / Sign In Button */}
+                <div className="flex items-center gap-2 sm:gap-3">
+                    {/* Upload Paper CTA Button */}
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (onNavigateUpload) {
+                                onNavigateUpload();
+                            } else {
+                                window.history.pushState({}, "", "/upload");
+                                window.dispatchEvent(new PopStateEvent("popstate"));
+                            }
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-accent hover:bg-amber-400 text-brand-dark text-xs sm:text-sm font-bold shadow-2xs transition-all cursor-pointer"
+                    >
+                        <span>Upload</span>
+                        <span>📤</span>
+                    </button>
 
                     {user ? (
                         <div className="hidden md:flex items-center gap-2 sm:gap-3">
@@ -121,7 +139,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Mobile Dropdown Menu */}
             {isMobileMenuOpen && (
                 <div className="md:hidden border-t border-slate-200 px-4 pt-3 pb-4 space-y-2 bg-white">
-
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            if (onNavigateUpload) {
+                                onNavigateUpload();
+                            } else {
+                                window.history.pushState({}, "", "/upload");
+                                window.dispatchEvent(new PopStateEvent("popstate"));
+                            }
+                        }}
+                        className="w-full py-2.5 px-3 text-xs font-bold text-brand-dark bg-accent hover:bg-amber-400 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+                    >
+                        <span>Upload Question Paper</span>
+                        <span>📤</span>
+                    </button>
 
                     <div className="pt-2 flex flex-col gap-2">
                         {user ? (

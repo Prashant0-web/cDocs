@@ -15,9 +15,7 @@ export interface SecureReaderDoc {
     course?: string;
     semester?: string;
     year?: string;
-    pdfUrl?: string;
     totalPages?: number;
-    pages?: Array<{ pageNumber: number; url: string }>;
 }
 
 interface SecureReaderModalProps {

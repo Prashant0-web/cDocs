@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import { Home } from "./app/home/Home";
 import { Privacy } from "./app/privacy/Privacy";
+import { UploadPage } from "./app/upload/UploadPage";
+import { PaperDetail } from "./app/paper/PaperDetail";
 import {
     getAuthToken,
     getAuthUser,
@@ -9,44 +11,77 @@ import {
     type StoredUser,
 } from "./utils/cookie.util";
 
+export type AppRoute =
+    | { type: "home" }
+    | { type: "privacy" }
+    | { type: "upload" }
+    | { type: "paper"; paperId: string };
+
+function parseCurrentLocation(): AppRoute {
+    if (typeof window === "undefined") return { type: "home" };
+    const p = window.location.pathname.toLowerCase();
+    const h = window.location.hash.toLowerCase();
+
+    if (p === "/privacy" || p === "/terms" || h === "#privacy" || h === "#terms") {
+        return { type: "privacy" };
+    }
+
+    if (p === "/upload" || h === "#upload") {
+        return { type: "upload" };
+    }
+
+    const paperMatch = window.location.pathname.match(/^\/(?:paper|document)\/([a-zA-Z0-9_-]+)/i);
+    if (paperMatch && paperMatch[1]) {
+        return { type: "paper", paperId: paperMatch[1] };
+    }
+
+    return { type: "home" };
+}
+
 function App() {
     const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-
-    const getInitialRoute = (): "home" | "privacy" => {
-        if (typeof window !== "undefined") {
-            const p = window.location.pathname.toLowerCase();
-            const h = window.location.hash.toLowerCase();
-            if (p === "/privacy" || p === "/terms" || h === "#privacy" || h === "#terms") {
-                return "privacy";
-            }
-        }
-        return "home";
-    };
-
-    const [currentRoute, setCurrentRoute] = useState<"home" | "privacy">(getInitialRoute());
+    const [currentRoute, setCurrentRoute] = useState<AppRoute>(parseCurrentLocation());
 
     // Listen to browser history navigation (back/forward)
     useEffect(() => {
         const handlePopState = () => {
-            const p = window.location.pathname.toLowerCase();
-            const h = window.location.hash.toLowerCase();
-            if (p === "/privacy" || p === "/terms" || h === "#privacy" || h === "#terms") {
-                setCurrentRoute("privacy");
-            } else {
-                setCurrentRoute("home");
-            }
+            setCurrentRoute(parseCurrentLocation());
         };
 
         window.addEventListener("popstate", handlePopState);
         return () => window.removeEventListener("popstate", handlePopState);
     }, []);
 
-    const navigateTo = (route: "home" | "privacy") => {
-        setCurrentRoute(route);
-        const path = route === "privacy" ? "/privacy" : "/";
-        if (window.location.pathname !== path) {
-            window.history.pushState({}, "", path);
+    const navigateToHome = () => {
+        setCurrentRoute({ type: "home" });
+        if (window.location.pathname !== "/") {
+            window.history.pushState({}, "", "/");
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const navigateToPrivacy = () => {
+        setCurrentRoute({ type: "privacy" });
+        if (window.location.pathname !== "/privacy") {
+            window.history.pushState({}, "", "/privacy");
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const navigateToUpload = () => {
+        setCurrentRoute({ type: "upload" });
+        if (window.location.pathname !== "/upload") {
+            window.history.pushState({}, "", "/upload");
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const navigateToPaper = (paperId: string) => {
+        setCurrentRoute({ type: "paper", paperId });
+        const targetPath = `/paper/${paperId}`;
+        if (window.location.pathname !== targetPath) {
+            window.history.pushState({}, "", targetPath);
         }
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -97,19 +132,43 @@ function App() {
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                     </svg>
-                    Loading...
+                    Loading cDocs...
                 </div>
             </div>
         );
     }
 
-    if (currentRoute === "privacy") {
+    if (currentRoute.type === "privacy") {
         return (
             <Privacy
                 user={currentUser}
-                onNavigateHome={() => navigateTo("home")}
+                onNavigateHome={navigateToHome}
                 onSignOut={handleSignOut}
-                onRequestAuth={() => navigateTo("home")}
+                onRequestAuth={() => navigateToHome()}
+            />
+        );
+    }
+
+    if (currentRoute.type === "upload") {
+        return (
+            <UploadPage
+                user={currentUser}
+                onNavigateHome={navigateToHome}
+                onNavigatePaper={navigateToPaper}
+                onSignOut={handleSignOut}
+                onRequestAuth={() => navigateToHome()}
+            />
+        );
+    }
+
+    if (currentRoute.type === "paper") {
+        return (
+            <PaperDetail
+                paperId={currentRoute.paperId}
+                user={currentUser}
+                onNavigateHome={navigateToHome}
+                onSignOut={handleSignOut}
+                onRequestAuth={() => navigateToHome()}
             />
         );
     }
@@ -119,7 +178,9 @@ function App() {
             user={currentUser}
             onSignOut={handleSignOut}
             onAuthSuccess={handleAuthSuccess}
-            onNavigatePrivacy={() => navigateTo("privacy")}
+            onNavigatePrivacy={navigateToPrivacy}
+            onNavigateUpload={navigateToUpload}
+            onNavigatePaper={navigateToPaper}
         />
     );
 }

@@ -12,6 +12,7 @@ export interface PageValidationResult {
     paperCode?: string | null;
     subject?: string | null;
     course?: string | null;
+    college?: string | null;
     semester?: string | null;
     examYear?: string | null;
     tags: string[];
@@ -90,10 +91,10 @@ export function computeHammingDistance(h1: string, h2: string): number {
  * Candidate Gemini models with graceful fallbacks
  */
 const CANDIDATE_MODELS = [
-    "gemini-3.8-flash",
     "gemini-flash-latest",
-    "gemini-2.5-flash-lite",
     "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-3.8-flash",
 ];
 
 async function generateWithFallback(ai: GoogleGenAI, contents: any[]): Promise<string | null> {
@@ -172,6 +173,7 @@ TASKS:
    - paperCode: Subject/Paper code (e.g. "25GEO404MV01", "BCS-011").
    - subject: Subject title (e.g. "Calculus", "Geography", "Database Management Systems").
    - course: Branch / Department (e.g. "CSE", "B.Tech", "B.Com").
+   - college: University / College name (e.g. "Delhi University", "AKTU", "SPPU", "IGNOU").
    - semester: Semester (e.g. "Semester 1", "Semester 2", "Semester 3", "Semester 4", "Semester 5", "Semester 6", "Semester 7", "Semester 8").
    - examYear: Year (e.g. "2025", "2024", "2023").
    - tags: Array of all searchable tags.
@@ -189,6 +191,7 @@ OUTPUT FORMAT (JSON ONLY):
   "paperCode": string or null,
   "subject": string or null,
   "course": string or null,
+  "college": string or null,
   "semester": string or null,
   "examYear": string or null,
   "tags": string[],
@@ -216,6 +219,7 @@ OUTPUT FORMAT (JSON ONLY):
                 if (parsed.paperCode) tagsSet.add(String(parsed.paperCode).trim());
                 if (parsed.subject) tagsSet.add(String(parsed.subject).trim());
                 if (parsed.course) tagsSet.add(String(parsed.course).trim());
+                if (parsed.college) tagsSet.add(String(parsed.college).trim());
                 if (parsed.semester) tagsSet.add(String(parsed.semester).trim());
                 if (parsed.examYear) tagsSet.add(String(parsed.examYear).trim());
                 if (Array.isArray(parsed.tags)) {
@@ -233,6 +237,7 @@ OUTPUT FORMAT (JSON ONLY):
                     paperCode: parsed.paperCode || null,
                     subject: parsed.subject || null,
                     course: parsed.course || null,
+                    college: parsed.college || null,
                     semester: parsed.semester || null,
                     examYear: parsed.examYear || null,
                     tags: Array.from(tagsSet).filter(Boolean),
@@ -255,6 +260,7 @@ OUTPUT FORMAT (JSON ONLY):
         detectedPageNumber: 1,
         topCode: null,
         paperCode: null,
+        college: null,
         semester: "Semester 4",
         tags: [],
         analysisMessage: "Verified with academic document sequence analyzer.",

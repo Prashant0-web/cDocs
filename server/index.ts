@@ -16,6 +16,7 @@ const productionOrigins = [
     process.env.CLIENT_ORIGIN,
     process.env.FRONTEND_URL,
     "https://cdocs.prashantbuilds.com",
+    "http://192.168.1.11:5173"
 ].filter(Boolean) as string[];
 
 // Local Development & Testing Whitelist (Active ONLY when NODE_ENV !== "production")

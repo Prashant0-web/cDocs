@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
 import sharp from "sharp";
 import DocumentModel from "./document.model.js";
+import DocumentReviewModel from "./review.model.js";
 import "../user/user.model.js";
 import {
     validateAndExtractPageData,
@@ -260,10 +261,18 @@ export const uploadDocumentController = async (req: Request, res: Response): Pro
             await docRecord.populate("created_by", "username email");
         }
 
+        const docObj = docRecord.toObject ? docRecord.toObject() : docRecord;
+        const { pdfUrl: _pUrl, pdfKey: _pKey, pages: _docPages, ...safeDoc } = docObj;
+
         res.status(201).json({
             success: true,
             message: "Document uploaded to Cloudflare R2 and saved to database successfully",
-            data: docRecord,
+            data: {
+                ...safeDoc,
+                thumbnailUrl: docRecord.thumbnailUrl || null,
+                totalPages: docRecord.totalPages,
+                stats: docRecord.stats,
+            },
         });
     } catch (error: any) {
         console.error("[Upload Document Controller Error]:", error);
@@ -285,7 +294,7 @@ export const uploadDocumentController = async (req: Request, res: Response): Pro
  */
 export const getDocumentsController = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { search, college, subjectCode, examYear, semester, page = "1", limit = "20" } = req.query;
+        const { search, college, subjectCode, examYear, semester, page = "1", limit = "20", sortBy } = req.query;
 
         const filter: Record<string, any> = { status: "active" };
 
@@ -308,11 +317,13 @@ export const getDocumentsController = async (req: Request, res: Response): Promi
 
         const searchStr = String(search || "").trim();
 
-        // 1. If no search query, return standard chronological listing
+        // 1. If no search query, return standard chronological listing or sorted by views
         if (!searchStr) {
+            const sortOption: any = sortBy === "views" ? { views: -1, createdAt: -1 } : { createdAt: -1 };
+
             const [documents, total] = await Promise.all([
                 DocumentModel.find(filter)
-                    .sort({ createdAt: -1 })
+                    .sort(sortOption)
                     .skip(skip)
                     .limit(limitNum)
                     .populate("created_by", "username email")
@@ -321,13 +332,12 @@ export const getDocumentsController = async (req: Request, res: Response): Promi
             ]);
 
             const sanitizedDocs = documents.map((doc: any) => {
-                const { pdfUrl, pdfKey, ...rest } = doc;
+                const { pdfUrl, pdfKey, pages: docPages, ...rest } = doc;
                 return {
                     ...rest,
-                    thumbnailUrl: doc.thumbnailUrl || (doc.pages && doc.pages[0]?.url) || null,
-                    pages: (doc.pages || []).map((p: any) => ({
+                    thumbnailUrl: doc.thumbnailUrl || null,
+                    pages: (docPages || []).map((p: any) => ({
                         pageNumber: p.pageNumber,
-                        url: p.url,
                         size: p.size,
                     })),
                 };
@@ -523,15 +533,14 @@ export const getDocumentsController = async (req: Request, res: Response): Promi
             // (F) POPULARITY MICRO-BOOST (Views/reads)
             score += Math.min(10, (doc.views || 0) * 0.2);
 
-            const { pdfUrl, pdfKey, ...rest } = doc;
+            const { pdfUrl, pdfKey, pages: docPages, ...rest } = doc;
             return {
                 ...rest,
                 matchScore: score,
                 matchingReasons: Array.from(new Set(matchReasons)),
-                thumbnailUrl: doc.thumbnailUrl || (doc.pages && doc.pages[0]?.url) || null,
-                pages: (doc.pages || []).map((p: any) => ({
+                thumbnailUrl: doc.thumbnailUrl || null,
+                pages: (docPages || []).map((p: any) => ({
                     pageNumber: p.pageNumber,
-                    url: p.url,
                     size: p.size,
                 })),
             };
@@ -589,18 +598,30 @@ export const getDocumentByIdController = async (req: Request, res: Response): Pr
             return;
         }
 
-        const doc = await DocumentModel.findByIdAndUpdate(
+        const doc: any = await DocumentModel.findByIdAndUpdate(
             id,
             { $inc: { views: 1 } },
             { new: true }
-        ).populate("created_by", "username email");
+        )
+            .populate("created_by", "username email")
+            .lean();
 
         if (!doc) {
             res.status(404).json({ success: false, message: "Document not found" });
             return;
         }
 
-        res.status(200).json({ success: true, data: doc });
+        const { pdfUrl, pdfKey, pages: docPages, ...rest } = doc;
+        const sanitized = {
+            ...rest,
+            thumbnailUrl: doc.thumbnailUrl || null,
+            pages: (docPages || []).map((p: any) => ({
+                pageNumber: p.pageNumber,
+                size: p.size,
+            })),
+        };
+
+        res.status(200).json({ success: true, data: sanitized });
     } catch (error: any) {
         res.status(500).json({
             success: false,
@@ -965,6 +986,120 @@ export const analyzeBatchPagesController = async (req: Request, res: Response): 
         res.status(500).json({
             success: false,
             message: error.message || "Failed to analyze paper pages",
+        });
+    }
+};
+
+/**
+ * @route POST /documents/:id/reviews
+ * Creates a review/feedback on a document
+ */
+export const createDocumentReviewController = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            res.status(400).json({ success: false, message: "Invalid document ID" });
+            return;
+        }
+
+        const doc = await DocumentModel.findById(id).select("_id title").lean();
+        if (!doc) {
+            res.status(404).json({ success: false, message: "Document not found" });
+            return;
+        }
+
+        const { stars, feedback, username, tags } = req.body;
+        const numStars = Number(stars);
+        if (isNaN(numStars) || numStars < 1 || numStars > 5) {
+            res.status(400).json({ success: false, message: "Stars rating must be between 1 and 5" });
+            return;
+        }
+
+        if (!feedback || typeof feedback !== "string" || !feedback.trim()) {
+            res.status(400).json({ success: false, message: "Feedback message cannot be empty" });
+            return;
+        }
+
+        const userId = getCreatorUserId(req);
+        let finalUsername = typeof username === "string" && username.trim() ? username.trim() : "Anonymous Student";
+
+        if (userId) {
+            const userDoc: any = await mongoose.model("User").findById(userId).select("username").lean();
+            if (userDoc?.username) {
+                finalUsername = userDoc.username;
+            }
+        }
+
+        const newReview = await DocumentReviewModel.create({
+            documentId: new mongoose.Types.ObjectId(id),
+            created_by: userId,
+            username: finalUsername,
+            stars: Math.round(numStars),
+            feedback: feedback.trim().slice(0, 1000),
+            tags: Array.isArray(tags) ? tags.map((t: any) => String(t).trim()).filter(Boolean) : [],
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Feedback submitted successfully!",
+            data: newReview,
+        });
+    } catch (error: any) {
+        console.error("[Create Document Review Controller Error]:", error);
+        res.status(500).json({
+            success: false,
+            message: error.message || "Failed to submit review",
+        });
+    }
+};
+
+/**
+ * @route GET /documents/:id/reviews
+ * Fetches reviews and rating distribution for a document
+ */
+export const getDocumentReviewsController = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            res.status(400).json({ success: false, message: "Invalid document ID" });
+            return;
+        }
+
+        const reviews = await DocumentReviewModel.find({
+            documentId: new mongoose.Types.ObjectId(id),
+        })
+            .populate("created_by", "username email")
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const totalReviews = reviews.length;
+        let sum = 0;
+        const breakdown: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+        for (const r of reviews) {
+            sum += r.stars;
+            const s = Number(r.stars);
+            if (s >= 1 && s <= 5) {
+                breakdown[s] = (breakdown[s] ?? 0) + 1;
+            }
+        }
+
+        const averageStars = totalReviews > 0 ? Number((sum / totalReviews).toFixed(1)) : 5.0;
+
+        res.status(200).json({
+            success: true,
+            data: {
+                reviews,
+                totalReviews,
+                averageStars,
+                breakdown,
+            },
+        });
+    } catch (error: any) {
+        console.error("[Get Document Reviews Controller Error]:", error);
+        res.status(500).json({
+            success: false,
+            message: error.message || "Failed to fetch document reviews",
         });
     }
 };
